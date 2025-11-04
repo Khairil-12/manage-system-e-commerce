@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Manajemen</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="dark-mode">
+    <!-- Login Modal -->
+    <div
+      class="modal fade"
+      id="loginModal"
+      tabindex="-1"
+      aria-labelledby="loginModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content bg-secondary text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">Login</h5>
+          </div>
+          <form id="loginForm">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  required
+                />
+                <div class="invalid-feedback">Silakan masukkan username.</div>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  required
+                />
+                <div class="invalid-feedback">Silakan masukkan password.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav
+          id="sidebar"
+          class="col-md-2 d-md-block bg-secondary sidebar collapse"
+        >
+          <div class="sidebar-sticky pt-3">
+            <div class="text-center mb-4">
+              <h2 class="text-white">ManageSystem</h2>
+            </div>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a href="#dashboard" class="nav-link active">
+                  <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#master" class="nav-link">
+                  <i class="fas fa-folder me-2"></i> File Produk
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#sales" class="nav-link">
+                  <i class="fas fa-cash-register me-2"></i> Penjualan
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#purchases" class="nav-link">
+                  <i class="fas fa-shopping-cart me-2"></i> Pembelian
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#reports" class="nav-link">
+                  <i class="fas fa-chart-line me-2"></i> Laporan
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#suppliers" class="nav-link">
+                  <i class="fas fa-truck me-2"></i> Supplier
+                </a>
+              </li>
+            </ul>
+
+            <!-- Dark Mode Toggle -->
+            <div class="mt-4 text-center">
+              <button id="toggleDarkMode" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-sun"></i> Light Mode
+              </button>
+            </div>
+
+            <!-- Backup & Restore Section -->
+            <div class="mt-3 text-center">
+              <button
+                class="btn btn-sm btn-outline-info mb-2"
+                id="backupBtn"
+                style="width: 90%"
+              >
+                <i class="fas fa-download me-1"></i> Backup Data
+              </button>
+              <div>
+                <input
+                  type="file"
+                  id="restoreFile"
+                  accept=".json"
+                  style="display: none"
+                />
+                <button
+                  class="btn btn-sm btn-outline-warning"
+                  id="restoreBtn"
+                  style="width: 90%"
+                >
+                  <i class="fas fa-upload me-1"></i> Restore Data
+                </button>
+              </div>
+            </div>
+
+            <!-- Logout Button -->
+            <button class="btn btn-sm btn-danger mt-4" id="logoutBtn">
+              <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </button>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-10 ms-sm-auto px-4">
+          <!-- Alert Container -->
+          <div id="alertContainer"></div>
+
+          <!-- Dashboard -->
+          <section id="dashboard" class="py-5">
+            <h1 class="mb-4">Dashboard</h1>
+            <!-- Total Metrics -->
+            <div class="row g-4">
+              <div class="col-md-4">
+                <div class="card border">
+                  <div class="card-body">
+                    <h5 class="card-title">Total Transaksi Penjualan</h5>
+                    <p class="card-text" id="totalTransaksi">0</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border">
+                  <div class="card-body">
+                    <h5 class="card-title">Total Pendapatan Penjualan</h5>
+                    <p class="card-text" id="totalPendapatan">Rp 0</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border">
+                  <div class="card-body">
+                    <h5 class="card-title">Total Barang Terjual</h5>
+                    <p class="card-text" id="totalBarangTerjual">0</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Master Files -->
+          <section id="master" class="py-5" style="display: none">
+            <h1 class="mb-4">File Produk</h1>
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+              <div>
+                <button
+                  class="btn btn-primary me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#produkModal"
+                  id="tambahProdukBtn"
+                >
+                  <i class="fas fa-plus-circle"></i> Tambah Produk
+                </button>
+              </div>
+            </div>
+
+            <!-- Search and Sort -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <input
+                  type="text"
+                  id="searchProduk"
+                  class="form-control"
+                  placeholder="Cari Produk..."
+                />
+              </div>
+              <div class="col-md-6 text-end">
+                <select id="sortProduk" class="form-select w-auto d-inline">
+                  <option value="">Urutkan Berdasarkan</option>
+                  <option value="kode">Kode</option>
+                  <option value="nama">Nama</option>
+                  <option value="kategori">Kategori</option>
+                  <option value="harga">Harga</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>Kategori</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="produkTableBody">
+                  <!-- Data produk akan muncul di sini -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination for Products -->
+            <nav aria-label="Page navigation">
+              <ul
+                class="pagination justify-content-center"
+                id="produkPagination"
+              >
+                <!-- Halaman akan dibuat dinamis -->
+              </ul>
+            </nav>
+          </section>
+
+          <!-- Sales Section -->
+          <section id="sales" class="py-5" style="display: none">
+            <h1 class="mb-4">Input Penjualan</h1>
+            <div class="mb-4">
+              <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#salesModal"
+                id="tambahPenjualanBtn"
+              >
+                <i class="fas fa-plus-circle"></i> Tambah Penjualan
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID Penjualan</th>
+                    <th>Tanggal</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Nama Pelanggan</th>
+                    <th>Total Pembayaran</th>
+                  </tr>
+                </thead>
+                <tbody id="salesTableBody">
+                  <!-- Sales data will appear here -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination for Sales -->
+            <nav aria-label="Page navigation">
+              <ul
+                class="pagination justify-content-center"
+                id="salesPagination"
+              >
+                <!-- Halaman akan dibuat dinamis -->
+              </ul>
+            </nav>
+          </section>
+
+          <!-- Purchases Section -->
+          <section id="purchases" class="py-5" style="display: none">
+            <h1 class="mb-4">Input Pembelian</h1>
+            <div class="mb-4">
+              <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#purchaseModal"
+                id="tambahPembelianBtn"
+              >
+                <i class="fas fa-plus-circle"></i> Tambah Pembelian
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID Pembelian</th>
+                    <th>Tanggal</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Nama Supplier</th>
+                    <th>Total Biaya</th>
+                  </tr>
+                </thead>
+                <tbody id="purchaseTableBody">
+                  <!-- Purchase data will appear here -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination for Purchases -->
+            <nav aria-label="Page navigation">
+              <ul
+                class="pagination justify-content-center"
+                id="purchasePagination"
+              >
+                <!-- Halaman akan dibuat dinamis -->
+              </ul>
+            </nav>
+          </section>
+
+          <!-- Reports -->
+          <section id="reports" class="py-5" style="display: none">
+            <h1 class="mb-4">Laporan Penjualan</h1>
+            <!-- Filter Tanggal -->
+            <div class="mb-4">
+              <label for="filterTanggal" class="form-label"
+                >Filter Tanggal</label
+              >
+              <input
+                type="date"
+                id="filterTanggal"
+                class="form-control w-auto d-inline"
+              />
+              <button class="btn btn-secondary ms-2" id="applyFilter">
+                Terapkan Filter
+              </button>
+            </div>
+            <canvas id="salesChart" width="400" height="200"></canvas>
+          </section>
+
+          <!-- Supplier Section -->
+          <section id="suppliers" class="py-5" style="display: none">
+            <h1 class="mb-4">Manajemen Supplier</h1>
+            <div class="mb-4">
+              <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#supplierModal"
+                id="tambahSupplierBtn"
+              >
+                <i class="fas fa-plus-circle"></i> Tambah Supplier
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID Supplier</th>
+                    <th>Nama Supplier</th>
+                    <th>Kontak</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="supplierTableBody">
+                  <!-- Supplier data will appear here -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination for Suppliers (optional, implement if needed) -->
+            <nav aria-label="Page navigation">
+              <ul
+                class="pagination justify-content-center"
+                id="supplierPagination"
+              >
+                <!-- Halaman akan dibuat dinamis -->
+              </ul>
+            </nav>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Produk Modal -->
+    <div
+      class="modal fade"
+      id="produkModal"
+      tabindex="-1"
+      aria-labelledby="produkModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content bg-secondary text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="produkModalLabel">Tambah Produk</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <form id="formProduk">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="kodeProduk" class="form-label">Kode Produk</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="kodeProduk"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan kode produk.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="namaProduk" class="form-label">Nama Produk</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="namaProduk"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan nama produk.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="kategoriProduk" class="form-label">Kategori</label>
+                <select class="form-select" id="kategoriProduk" required>
+                  <option value="">Pilih Kategori</option>
+                  <option>Elektronik</option>
+                  <option>Pakaian</option>
+                  <option>Obat</option>
+                  <option>Peralatan</option>
+                  <option>Perabotan</option>
+                  <!-- Tambahkan kategori lainnya jika diperlukan -->
+                </select>
+                <div class="invalid-feedback">Silakan pilih kategori.</div>
+              </div>
+              <div class="mb-3">
+                <label for="hargaProduk" class="form-label">Harga</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="hargaProduk"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan harga yang valid.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="stokProduk" class="form-label">Stok</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="stokProduk"
+                  required
+                  min="0"
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan stok yang valid.
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div
+      class="modal fade"
+      id="supplierModal"
+      tabindex="-1"
+      aria-labelledby="supplierModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content bg-secondary text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="supplierModalLabel">Tambah Supplier</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <form id="formSupplier">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="idSupplier" class="form-label">ID Supplier</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="idSupplier"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan ID supplier.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="namaSupplier" class="form-label"
+                  >Nama Supplier</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="namaSupplier"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan nama supplier.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="kontakSupplier" class="form-label">Kontak</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="kontakSupplier"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan kontak supplier.
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div
+      class="modal fade"
+      id="purchaseModal"
+      tabindex="-1"
+      aria-labelledby="purchaseModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content bg-secondary text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="purchaseModalLabel">
+              Tambah Pembelian
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <form id="formPurchase">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="tanggalPembelian" class="form-label"
+                  >Tanggal Pembelian</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="tanggalPembelian"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan tanggal pembelian.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="kodeProdukPembelian" class="form-label"
+                  >Kode Produk</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="kodeProdukPembelian"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan kode produk.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="jumlahPembelian" class="form-label">Jumlah</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="jumlahPembelian"
+                  required
+                  min="1"
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan jumlah pembelian yang valid.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="totalBiayaPembelian" class="form-label"
+                  >Total Biaya</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="totalBiayaPembelian"
+                  required
+                  min="1"
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan total biaya pembelian yang valid.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="supplierPembelian" class="form-label"
+                  >Supplier</label
+                >
+                <select class="form-select" id="supplierPembelian" required>
+                  <option value="">Pilih Supplier</option>
+                  <!-- Options will be loaded dynamically -->
+                </select>
+                <div class="invalid-feedback">Silakan pilih supplier.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Simpan Pembelian
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Modal -->
+    <div
+      class="modal fade"
+      id="salesModal"
+      tabindex="-1"
+      aria-labelledby="salesModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content bg-secondary text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="salesModalLabel">Tambah Penjualan</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <form id="formSales">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="tanggalPenjualan" class="form-label"
+                  >Tanggal Penjualan</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="tanggalPenjualan"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan tanggal penjualan.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="kodeProdukPenjualan" class="form-label"
+                  >Kode Produk</label
+                >
+                <select class="form-select" id="kodeProdukPenjualan" required>
+                  <option value="">Pilih Produk</option>
+                  <!-- Options will be loaded dynamically -->
+                </select>
+                <div class="invalid-feedback">Silakan pilih produk.</div>
+              </div>
+              <div class="mb-3">
+                <label for="namaProdukPenjualanDisplay" class="form-label"
+                  >Nama Produk</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="namaProdukPenjualanDisplay"
+                  readonly
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="jumlahPenjualan" class="form-label">Jumlah</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="jumlahPenjualan"
+                  required
+                  min="1"
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan jumlah penjualan yang valid.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="namaPelangganPenjualan" class="form-label"
+                  >Nama Pelanggan</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="namaPelangganPenjualan"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Silakan masukkan nama pelanggan.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="totalPembayaranDisplay" class="form-label"
+                  >Total Pembayaran</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="totalPembayaranDisplay"
+                  readonly
+                  disabled
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Simpan Penjualan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="scripts.js"></script>
+  </body>
+</html>
